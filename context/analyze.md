@@ -17,6 +17,7 @@
 - 旧的未完成克隆已移动为 `project/DMCompatibility/codeDiff/mysql/mysql-server.incomplete-20260201` 以避免污染当前对照。
 - 下载 MariaDB Server 源码到本地用于对照：`project/DMCompatibility/codeDiff/mariadb/mariadb-server`，commit `3218602d3100db9ce7a875511a591cddc173cc16`（branch 10.11，稀疏拉取）。
 - 初始化 `project/DMCompatibility` 为 Git 仓库并添加子模块（mariadb2tidb/go-mysql/mysql-server/mariadb-server），提交首个 commit `9c34d9b`。推送到 `https://github.com/Benjamin2037/DM-Compatibility-analyzing` 时因缺少 GitHub 凭据失败。
+- 已验证 SSH 可用（`git@github.com:Benjamin2037`），但目标仓库尚未创建，推送时报 “Repository not found”。
 
 ## 资料收集清单（待补充）
 - MySQL 官方兼容性/语法/数据类型文档
