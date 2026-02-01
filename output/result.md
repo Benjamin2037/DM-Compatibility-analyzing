@@ -134,6 +134,50 @@ type SchemaTransformer interface {
 | Function defaults | Remove/replace unsupported default functions | https://github.com/developer-Bushido/mariadb2tidb/blob/f7cf760b8d4a25281da9306fbc980c1855b11844/internal/rules/function_default.go#L9-L70 |
 | UUID preprocessing | UUID → CHAR(36) and fix constraints/defaults | https://github.com/developer-Bushido/mariadb2tidb/blob/f7cf760b8d4a25281da9306fbc980c1855b11844/internal/parser/loader.go#L89-L205 |
 
-## 5. Conclusion
+## 5. Scenario Templates (domain-specific compatibility focus)
+
+### 5.1 Finance (payments, core banking, risk control)
+- **Data profile**: strict ACID, low tolerance for schema drift, strong audit requirements.
+- **Common MariaDB features**: sequences, CHECK constraints, generated columns, system-versioned tables, strict time-related status vars.
+- **Top risks**: GTID resume correctness, unsupported CHECK functions, system-versioned DDL, timezone/status var parsing.
+- **DM actions**: strict mode; enable Schema Transformer rules for function defaults, JSON_CHECK, UUID preprocessing, text/blob defaults; explicit MariaDB GTID event handling; enforce collation mapping.
+- **Validation**: end-to-end checksum, DDL replay audit, binlog continuity tests, strict fail-fast on unsupported DDL.
+
+### 5.2 E-commerce (orders, catalog, inventory)
+- **Data profile**: wide tables, high write peaks, frequent online DDL, multilingual data.
+- **Common MariaDB features**: JSON attributes + JSON_VALID checks, long indexes, text/blob defaults, MariaDB collations.
+- **Top risks**: DDL failures on JSON/CHECK/defaults, index length/prefix violations, collation incompatibility.
+- **DM actions**: enable index_prefix/keylength/collation rules; strip unsupported table options; normalize DDL IF EXISTS semantics; use balanced (strict for data, loose for DDL) policy.
+- **Validation**: transformed DDL diff review, index length audit, collation mapping report, peak write lag testing.
+
+### 5.3 Government / Public Sector (archival, compliance)
+- **Data profile**: long retention, auditable history, conservative change control.
+- **Common MariaDB features**: system-versioned tables, conditional SQL comments, large text columns.
+- **Top risks**: system-versioned DDL unsupported by TiDB, conditional SQL dropped, text/blob default restrictions.
+- **DM actions**: strict mode; block or explicitly rewrite system-versioned DDL; record all removed clauses and warnings; keep audit logs for every transformation.
+- **Validation**: compliance review of schema deltas, full data checksum, audit trail parity checks.
+
+### 5.4 Social Platforms (user content, messaging)
+- **Data profile**: very high concurrency, utf8mb4/emoji, large secondary indexes, semi-structured data.
+- **Common MariaDB features**: MariaDB collations, JSON columns, generated columns, long index prefixes.
+- **Top risks**: collation mapping gaps, index length limits, JSON index incompatibility.
+- **DM actions**: apply collation mapping and index prefix rules; convert or drop JSON indexes; keep Tracker and downstream DDL aligned.
+- **Validation**: encoding/emoji integrity checks, search/index parity sampling, latency under peak load.
+
+### 5.5 AI / ML Systems (feature store, metadata)
+- **Data profile**: semi-structured features, frequent schema evolution, large payloads.
+- **Common MariaDB features**: JSON/text defaults, generated columns, long indexes for feature lookup.
+- **Top risks**: unsupported defaults, generated column constraints, index length issues.
+- **DM actions**: loose mode for DDL (with warnings), strict for DML; enable default/JSON/generate-column rules; maintain detailed transform logs.
+- **Validation**: feature distribution sampling, schema-change replay tests, latency and lag monitoring.
+
+### 5.6 Logging / Observability Platforms
+- **Data profile**: append-heavy, huge tables, wide text columns, high throughput.
+- **Common MariaDB features**: text/blob defaults, engine declarations, long indexes on tags.
+- **Top risks**: DDL failures due to defaults, index prefix violations, unsupported engine/table options.
+- **DM actions**: loose mode; strip incompatible table options; apply index prefix rules; tune relay and apply throughput.
+- **Validation**: ingestion throughput, end-to-end lag, sampling-based data integrity checks.
+
+## 6. Conclusion
 - DM already supports basic binlog/GTID for MySQL/MariaDB, but has systematic gaps in MariaDB DDL syntax, object features, data type semantics, indexes, and collations.
 - Introducing a Schema Transformer, binlog event compatibility layer, and Tracker consistency strategy can make MariaDB-as-source migration predictable, auditable, and seamless.
