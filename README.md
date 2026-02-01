@@ -1,12 +1,10 @@
 # DM-Compatibility-analyzing
 
-This repo captures the ongoing compatibility analysis for DM with MySQL and MariaDB, including code references, gap list, and design notes.
+This repo captures the ongoing compatibility analysis for DM with MySQL and MariaDB, including gap list and design notes.
 
 ## Structure
 - `DMC.md`: original requirements and constraints
-- `context/`: working notes and code link index (`analyze.md`)
 - `output/`: final report (`result.md`)
-- `ToDo.md`: task tracking
 - `codeDiff/`: upstream references (as submodules)
 
 ## Submodules
