@@ -1,5 +1,11 @@
 # DM vs MySQL/MariaDB Comprehensive Diff & Compatibility Design Report
 
+## 0. How to Navigate This Report
+- For a single-file view, read result.md.
+- For per-problem details, see output/issues/ (grouped by category).
+- For domain templates, see output/scenarios/.
+
+
 ## 1. Scope and Baselines
 - DM (tiflow) code version: `142713c45bf390219f102cb7bd7b4dedc6be6e6f`, path: `/Users/benjamin2037/Desktop/workspace/sourcecode/tiflow`
 - TiDB code version: `85389ef3740fcc5058a5660e4382e2f1e80c0f28`, path: `/Users/benjamin2037/Desktop/workspace/sourcecode/tidb`
